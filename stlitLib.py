@@ -166,7 +166,7 @@ if choice == "오늘의 도서관강좌":
     #starting_url = 'https://www.hscitylib.or.kr/iutlib/menu/11388/program/30021/lectureList.do?currentPageNo=1&statusCd=&targetCd='
 
     # Start crawling
-    d = st.date_input("날짜를 선택하세요", datetime.today())
+    d = st.date_input("날짜를 선택하세요", datetime.today(), datetime.today())
     st.markdown("""---""")
     # datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
     setDay = datetime(d.year,d.month,d.day)
