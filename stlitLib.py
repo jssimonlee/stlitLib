@@ -137,6 +137,7 @@ if choice == "오늘의 도서관강좌":
         st.write("인원: " + dataList[5])
         st.write("시간: " + dataList[6])
         st.write("장소: " + dataList[7])
+        st.markdown("""---""")
         st.write("\n")
 
 
@@ -165,16 +166,12 @@ if choice == "오늘의 도서관강좌":
     #starting_url = 'https://www.hscitylib.or.kr/iutlib/menu/11388/program/30021/lectureList.do?currentPageNo=1&statusCd=&targetCd='
 
     # Start crawling
+    d = st.date_input("날짜를 선택하세요", datetime.today())
+    st.markdown("""---""")
+    # datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
+    setDay = datetime(d.year,d.month,d.day)
     totalCnt = 0
-    setDay = datetime.today()
-    setDay = datetime(setDay.year,setDay.month,setDay.day)
-    #setDay = datetime(2023,9,14)
-    setDayStr = input("검색할 날짜를 입력해주세요(예 2023-9-13, 그냥 Enter를 치면 오늘을 검색) : ")
-    if setDayStr:
-        myear = int(setDayStr.split("-")[0])
-        mmon = int(setDayStr.split("-")[1])
-        mday = int(setDayStr.split("-")[2])
-        setDay = datetime(myear,mmon,mday)
+
         
     crawl_web(starting_url)
     crawl_web(starting_url.replace("No=1","No=2"))
