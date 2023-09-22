@@ -6,12 +6,17 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import sqlite3 as sq
+import pandas as pd
+from PIL import Image
+from jamo import h2j, j2hcj #한글을 자모로 분리하는 라이브러리
+import qrcode
+
     
 
 # https://icons.getbootstrap.com/
 
 with st.sidebar:
-    choice = option_menu(None, ["Upload", "Download", "오늘의 도서관강좌"],
+    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌"],
                          icons=['cloud-upload', 'cloud-download', 'brush'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
@@ -21,6 +26,56 @@ with st.sidebar:
         "nav-link-selected": {"background-color": "#08c7b4"},
     }
     )
+
+if choice == "QR코드 만들기":
+    # 한글입력받은 것을 자모 분리하여 영어해당자판으로 바꾸어서 리턴(코라스의 아이디는 한글에 해당하는 영어로 입력되어야함)
+    def kortoEng(input_text):
+        out_text = ""
+        test_dict = {'ㄱ': 'r', 'ㄲ': 'R', 'ㄴ': 's', 'ㄷ': 'e', 'ㄸ': 'E', 'ㄹ': 'f', 'ㅁ': 'a', 'ㅂ': 'q', 'ㅃ': 'Q', 'ㅅ': 't', 'ㅆ': 'T', 'ㅇ': 'd', 'ㅈ': 'w', 'ㅉ': 'W', 'ㅊ': 'c', 'ㅋ': 'z', 'ㅌ': 'x', 'ㅍ': 'v', 'ㅎ': 'g', 'ㅏ': 'k', 'ㅐ': 'o', 'ㅑ': 'i', 'ㅒ': 'O', 'ㅓ': 'j', 'ㅔ': 'p', 'ㅕ': 'u', 'ㅖ': 'P', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hl', 'ㅛ': 'y', 'ㅜ': 'n', 'ㅝ': 'nj', 'ㅞ': 'np', 'ㅟ': 'nl', 'ㅠ': 'b', 'ㅡ': 'm', 'ㅢ': 'ml', 'ㅣ': 'l', 'ㄳ': 'rt', 'ㄵ': 'sw', 'ㄶ': 'sg', 'ㄺ': 'fr', 'ㄻ': 'fa', 'ㄼ': 'fq', 'ㄽ': 'ft', 'ㄾ': 'fx', 'ㄿ': 'fv', 'ㅀ': 'fg', 'ㅄ': 'qt'}
+        for char in input_text:
+            if '가' <= char <= '힣':
+                separated_text = j2hcj(h2j(char))
+                eng = ''
+                for kor in separated_text:
+                    eng = test_dict[kor]
+                    out_text = out_text + eng
+            else:
+                out_text = out_text + char
+        return out_text
+
+    st.header("QR코드 생성")
+    option = st.selectbox(
+        '어떤 QR코드를 만드시겠어요?',
+        ('코라스 ID와 비번', '인터넷주소 및 기타', '와이파이 자동접속'))
+
+    if option == '코라스 ID와 비번':
+        #st.subheader("코라스 로그인 아이디 비번입력")
+        col1, col2 = st.columns(2)
+        with col1:
+            kollasId = st.text_input('아이디를 입력하세요')
+        with col2:
+            kollasPw = st.text_input('비번을 입력하세요')
+        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+        btn_clicked = st.button("만들기")
+        if btn_clicked and kollasId and kollasPw:
+            kollasId = kortoEng(kollasId)
+            kollasPw = kortoEng(kollasPw)
+            inStr = kollasId + "\t" + kollasPw
+            img = qrcode.make(inStr)
+            type(img)
+            img.save("lib.png")
+            qrimg = Image.open("lib.png")
+            st.image(qrimg, width=qrWidth, caption="코라스 ID와 비번")
+            # 비번만 나오는 QR동시 생성
+            kollasPw = kortoEng(kollasPw)
+            inStr = kollasPw
+            img = qrcode.make(inStr)
+            type(img)
+            img.save("libpw.png")
+            qrimg = Image.open("libpw.png")
+            st.image(qrimg, width=qrWidth-10, caption="코라스 비번만")
+
+            
 
 if choice == "오늘의 도서관강좌":
     def crawl_web(url):
@@ -50,9 +105,16 @@ if choice == "오늘의 도서관강좌":
                     # 오늘과 시작일을 비교(today함수는 시간까지 나오기 때문에 날짜만 나오는 시작 끝 시간과 계산을 통해 값을 추정해야함)
                     timedifSt = start - setDay
                     timedifEnd = end - setDay
+                    # 오늘이 포함된 달(즉 이달)이면 모두 저장(지난 날이라도 이달이라면 보고 싶을때가 있어서)
+                    thisMonth = datetime(datetime.today().year,datetime.today().month,1)
+                    thisMonthFlag = False
+                    if start.year >=  thisMonth.year and start.month >= thisMonth.month:
+                        thisMonthFlag = True
+                    else:
+                        thisMonthFlag = False
                     idNum = each.find('a').attrs['href'].split('=')[-1]
                     # 시작일이 오늘이상이거나 종료일이 오늘 또는 미래인 것만 검색
-                    if  (timedifSt.days >=0 or timedifEnd.days >=0) and (idNum in fetchList):
+                    if  (timedifSt.days >=0 or timedifEnd.days >=0 or thisMonthFlag) and (idNum in fetchList) :
                         # 제목에 불필요한 번호가 .과 함께 있어서 제거
                         titlePos = each.get_text().splitlines()[1].find('.')
                         title = each.get_text().splitlines()[1][titlePos+1:].strip()
@@ -130,15 +192,25 @@ if choice == "오늘의 도서관강좌":
     def display(dataList):
         global totalCnt
         totalCnt = totalCnt + 1
-        st.write("제목: " + dataList[1])
-        st.write("대상: " + dataList[2])
-        st.write("링크: " + dataList[3])
-        st.write("일자: " + dataList[4])
-        st.write("인원: " + dataList[5])
-        st.write("시간: " + dataList[6])
-        st.write("장소: " + dataList[7])
+##        st.write("제목: " + dataList[1])
+##        st.write("대상: " + dataList[2])
+##        st.write("링크: " + dataList[3])
+##        st.write("일자: " + dataList[4])
+##        st.write("인원: " + dataList[5])
+##        st.write("시간: " + dataList[6])
+##        st.write("장소: " + dataList[7])
+##        st.markdown("""---""")
+##        st.write("\n")
+        #data = [dataList[3],dataList[2],dataList[1],dataList[4],dataList[5],dataList[6],dataList[7]]
+        # ["제목","대상","링크","일자","인원","시간","장소"]
+        lecIndex = ["강좌제목","교육대상","강좌링크","수강기간","신청자수","요일시간","교육장소"]
+        df = pd.DataFrame(dataList[1:], index=lecIndex)
+        df.columns=["내용"]
+        #df.style.apply(lambda x: "background-color: red")
+        st.markdown(df.to_html(render_links=True),unsafe_allow_html=True)
+        #st.data_editor(df, column_config={"내용": st.column_config.LinkColumn("내용"), "widgets": st.column_config.Column("Streamlit Widgets",width="large")})
         st.markdown("""---""")
-        st.write("\n")
+        #st.write("\n")
 
 
     # 시작일과 종료일을 받아서 선정한 날짜와 맞는지 확인
@@ -166,7 +238,7 @@ if choice == "오늘의 도서관강좌":
     #starting_url = 'https://www.hscitylib.or.kr/iutlib/menu/11388/program/30021/lectureList.do?currentPageNo=1&statusCd=&targetCd='
 
     # Start crawling
-    d = st.date_input("날짜를 선택하세요", datetime.today(), datetime.today())
+    d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
     st.markdown("""---""")
     # datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
     setDay = datetime(d.year,d.month,d.day)
