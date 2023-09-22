@@ -77,7 +77,7 @@ if choice == "QR코드 만들기":
             qrimg = Image.open("libpw.png")
             with col4:
                 st.image(qrimg, width=qrWidth-10, caption="코라스 비번만")
-            st.write('Ctrl버튼과 "P"버튼을 동시에 눌러서 프린트하세요')
+            st.write('Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요')
 
             
 
