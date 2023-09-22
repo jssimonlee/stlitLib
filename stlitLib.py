@@ -43,7 +43,7 @@ if choice == "QR코드 만들기":
                 out_text = out_text + char
         return out_text
 
-    st.header("QR코드 생성")
+    #st.header("QR코드 생성")
     option = st.selectbox(
         '어떤 QR코드를 만드시겠어요?',
         ('코라스 ID와 비번', '인터넷주소 및 기타', '와이파이 자동접속'))
@@ -65,7 +65,9 @@ if choice == "QR코드 만들기":
             type(img)
             img.save("lib.png")
             qrimg = Image.open("lib.png")
-            st.image(qrimg, width=qrWidth, caption="코라스 ID와 비번")
+            col3, col4 = st.columns(2)
+            with col3:
+                st.image(qrimg, width=qrWidth, caption="코라스 ID와 비번")
             # 비번만 나오는 QR동시 생성
             kollasPw = kortoEng(kollasPw)
             inStr = kollasPw
@@ -73,7 +75,9 @@ if choice == "QR코드 만들기":
             type(img)
             img.save("libpw.png")
             qrimg = Image.open("libpw.png")
-            st.image(qrimg, width=qrWidth-10, caption="코라스 비번만")
+            with col4:
+                st.image(qrimg, width=qrWidth-10, caption="코라스 비번만")
+            st.write('Ctrl버튼과 "P"버튼을 동시에 눌러서 프린트하세요')
 
             
 
