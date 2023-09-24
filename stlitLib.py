@@ -135,12 +135,13 @@ if choice == "QR코드 만들기":
             with open("wifi.png", "rb") as f:
                 file_contents = f.read()
             st.download_button(label="다운로드", data=file_contents, key="wifi.png", file_name="wifi.png")
-            # st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
+            #st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
             st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
             
 
 if choice == "오늘의 도서관강좌":
+    # 우선 첫페이지를 읽어서 거기의 id를 찾아서 db에 검색한다, db에 있으면 db에서 출력하고 없으면 data를 정리하여 db에 입력한다.
     def crawl_web(url):
         global setDay
         try:
@@ -249,7 +250,7 @@ if choice == "오늘의 도서관강좌":
         c.execute("INSERT INTO lec (id,title,lecFor,link,lecDay,applyCnt,lecTime,lecPlace) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (dataList[0], dataList[1], dataList[2], dataList[3], dataList[4], dataList[5], dataList[6], dataList[7]))
         conn.commit()
         conn.close()    
-
+        dayMatchCheck(dataList)
 
     # 화면에 표시하는 함수
     def display(dataList):
