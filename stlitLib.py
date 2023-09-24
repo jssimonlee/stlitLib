@@ -92,7 +92,7 @@ if choice == "QR코드 만들기":
                 with open("kollasQR.png", "rb") as f:
                     file_contents = f.read()
                 st.download_button(label="다운로드", data=file_contents, key="kollasQR.png", file_name="kollasQR.png")
-            st.warning("다운로드버튼을 누르면 다운로드 폴더에 kollasQR.png 파일을 생성합니다.", icon="✔")
+            # st.warning("다운로드버튼을 누르면 다운로드 폴더에 kollasQR.png 파일을 생성합니다.", icon="✔")
             st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
 
@@ -111,7 +111,7 @@ if choice == "QR코드 만들기":
             with open("link.png", "rb") as f:
                 file_contents = f.read()
             st.download_button(label="다운로드", data=file_contents, key="link.png", file_name="link.png")
-            st.warning("다운로드버튼을 누르면 다운로드 폴더에 link.png 파일을 생성합니다.", icon="✔")
+            # st.warning("다운로드버튼을 누르면 다운로드 폴더에 link.png 파일을 생성합니다.", icon="✔")
             st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
     elif option == '와이파이 자동접속':
@@ -135,7 +135,7 @@ if choice == "QR코드 만들기":
             with open("wifi.png", "rb") as f:
                 file_contents = f.read()
             st.download_button(label="다운로드", data=file_contents, key="wifi.png", file_name="wifi.png")
-            st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
+            # st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
             st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
             
