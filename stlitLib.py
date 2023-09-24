@@ -15,6 +15,7 @@ import qrcode
 
 # https://icons.getbootstrap.com/
 
+st.set_page_config(page_title ='도서관 도구', page_icon = "⚙")
 with st.sidebar:
     choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌"],
                          icons=['qr-code', 'brush'],
@@ -46,7 +47,7 @@ if choice == "QR코드 만들기":
     #st.header("QR코드 생성")
     option = st.selectbox(
         '어떤 QR코드를 만드시겠어요?',
-        ('코라스 ID와 비번', '인터넷주소 및 기타', '와이파이 자동접속'))
+        ('코라스 ID와 비번', '인터넷주소', '와이파이 자동접속'))
 
     if option == '코라스 ID와 비번':
         #st.subheader("코라스 로그인 아이디 비번입력")
@@ -77,7 +78,65 @@ if choice == "QR코드 만들기":
             qrimg = Image.open("libpw.png")
             with col4:
                 st.image(qrimg, width=qrWidth-10, caption="코라스 비번만")
-            st.write('Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요')
+            with col3:
+                # Image Merge(한번에 한개의 파일만 다운로드 가능하기 때문에 하나로 합침)
+                image1 = Image.open('lib.png')
+                image2 = Image.open('libpw.png')
+                image1_size = image1.size
+                image2_size = image2.size
+                new_image = Image.new('RGB',(2*image1_size[0], image1_size[1]), (250,250,250))
+                new_image.paste(image1,(0,0))
+                new_image.paste(image2,(image1_size[0],0))
+                new_image.save("kollasQR.png","PNG")
+                # 통합한 파일 다운로드
+                with open("kollasQR.png", "rb") as f:
+                    file_contents = f.read()
+                st.download_button(label="다운로드", data=file_contents, key="kollasQR.png", file_name="kollasQR.png")
+            st.warning("다운로드버튼을 누르면 다운로드 폴더에 kollasQR.png 파일을 생성합니다.", icon="✔")
+            st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
+
+
+
+    elif option == '인터넷주소':
+        intLink = st.text_input('인터넷주소를 입력하세요')
+        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+        btn_clicked = st.button("만들기")
+        if btn_clicked and intLink:
+            img = qrcode.make(intLink)
+            type(img)
+            img.save("link.png")
+            qrimg = Image.open("link.png")
+            st.image(qrimg, width=qrWidth, caption="인터넷주소")
+            # 파일 다운로드
+            with open("link.png", "rb") as f:
+                file_contents = f.read()
+            st.download_button(label="다운로드", data=file_contents, key="link.png", file_name="link.png")
+            st.warning("다운로드버튼을 누르면 다운로드 폴더에 link.png 파일을 생성합니다.", icon="✔")
+            st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
+
+    elif option == '와이파이 자동접속':
+        col1, col2 = st.columns(2)
+        with col1:
+            wifiId = st.text_input('아이디(SSID)를 입력하세요')
+        with col2:
+            wifiPw = st.text_input('비밀번호을 입력하세요')
+        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+        btn_clicked = st.button("만들기")
+        if btn_clicked and wifiId and wifiPw:
+            kollasId = kortoEng(wifiId)
+            kollasPw = kortoEng(wifiPw)
+            inStr = "WIFI:T:WPA;S:" + wifiId + ";P:" + wifiPw + ";H:;"
+            img = qrcode.make(inStr)
+            type(img)
+            img.save("wifi.png")
+            qrimg = Image.open("wifi.png")
+            st.image(qrimg, width=qrWidth, caption="와이파이 QR")
+            # 파일 다운로드
+            with open("wifi.png", "rb") as f:
+                file_contents = f.read()
+            st.download_button(label="다운로드", data=file_contents, key="wifi.png", file_name="wifi.png")
+            st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
+            st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
             
 
