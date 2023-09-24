@@ -17,7 +17,7 @@ import qrcode
 
 with st.sidebar:
     choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌"],
-                         icons=['cloud-upload', 'cloud-download', 'brush'],
+                         icons=['qr-code', 'brush'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
