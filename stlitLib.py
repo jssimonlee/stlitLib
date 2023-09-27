@@ -234,9 +234,12 @@ if choice == "오늘의 도서관강좌":
 
 
 if choice == "접수 중인 도서관강좌":
+    cremaX = False
     col1, col2 = st.columns(2)
     with col1:
         lib = st.selectbox('도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
+        if lib == '진안':
+            cremaX = st.checkbox("크레마제외",True)
     with col2:
         d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
     st.markdown("""---""")
@@ -258,7 +261,8 @@ if choice == "접수 중인 도서관강좌":
     # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
     finalDf = df[(df['접수시작일'] == setDay) | ((df['접수시작일'] < setDay) & (df['접수종료일'] >= setDay))]
     # 크레마 제외
-    finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
+    if cremaX:
+        finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
     # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
     if lib == '작은도서관':
         lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
