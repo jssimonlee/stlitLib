@@ -201,18 +201,16 @@ if choice == "오늘의 도서관강좌":
     df = crawl_web(starting_url, lib)
     
     # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
-    def clearWeek(x):
-        return x[0]
-    df['강좌요일'] = pd.to_numeric(df['강좌요일'].apply(clearWeek))
     # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
     df['강좌시작일'] = pd.to_datetime(df['강좌시작일'])
     df['강좌종료일'] = pd.to_datetime(df['강좌종료일'])
 
-
+    # datetime의 요일 값과 사이트의 요일 값이 달라서 맞춤
     wkDay = datetime.date(setDay).weekday()+1
     # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
     # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
-    finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (wkDay == df['강좌요일']))]
+    # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
+    finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
     # 크레마 제외
     finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
     # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
