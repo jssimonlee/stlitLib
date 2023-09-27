@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import time
-from streamlit_option_menu import option_menu
+from streamlit_option_menu import option_menu   # 메뉴를 꾸미는 라이브러리
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -10,15 +10,15 @@ import pandas as pd
 from PIL import Image
 from jamo import h2j, j2hcj #한글을 자모로 분리하는 라이브러리
 import qrcode
+import xml.etree.ElementTree as ET
 
     
-
 # https://icons.getbootstrap.com/
 
 st.set_page_config(page_title ='도서관 도구', page_icon = "⚙")
 with st.sidebar:
-    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌"],
-                         icons=['qr-code', 'brush'],
+    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌", '접수 중인 도서관강좌'],
+                         icons=['qr-code', 'brush', 'info-circle'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
@@ -56,7 +56,7 @@ if choice == "QR코드 만들기":
             kollasId = st.text_input('아이디를 입력하세요')
         with col2:
             kollasPw = st.text_input('비번을 입력하세요')
-        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+        qrWidth = st.slider("qr코드 크기를 조절하세요",20,400,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and kollasId and kollasPw:
             kollasId = kortoEng(kollasId)
@@ -138,179 +138,136 @@ if choice == "QR코드 만들기":
             #st.warning("다운로드버튼을 누르면 다운로드 폴더에 wifi.png 파일을 생성합니다.", icon="✔")
             st.warning('화면출력을 원하시면 Ctrl버튼과 "P"버튼을 동시에 눌러서 바코드가 있는 페이지만 프린트하세요', icon="✔")
 
+
+# 화성시통합예약시스템에서 제공하는 openAPI를 이용해서 데이터 받아서 DataFrame으로 만듬
+# 한번 데이터를 불러오면 cache해서 똑같은 걸 불러올때는 ttl시간까지는 다시 불러오지 않음
+@st.cache_data(show_spinner="화성시통합예약시스템 검색중", ttl="10m")
+def crawl_web(url, lib):
+    try:
+        print("crawl_web접근", lib, datetime.today())
+        # Send an HTTP GET request to the URL
+        response = requests.get(url)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the HTML content of the page
+            tree = ET.fromstring(response.text)
+            libNameLi = []
+            titleLi = []
+            lecForLi = []
+            linkLi = []
+            lecTimeLi = []
+            applyStLi = []
+            applyEndLi = []
+            lecWeekdayLi = []
+            lecDayStLi = []
+            lecDayEndLi = []
+            applyCntLi = []
+            lecPlaceLi =[]
+            for tag in tree[1]:
+                libNameLi.append(tag.find("INSTITUTION_NM").text)
+                titleLi.append(tag.find("LECTURE_NM").text)
+                lecForLi.append(tag.find("TARGET_NM").text)
+                linkLi.append(tag.find("DETAIL_URL").text)
+                lecTimeLi.append(tag.find("LECTURE_BEGIN_HM").text + " ~ " + tag.find("LECTURE_END_HM").text)
+                applyStLi.append(tag.find("LECTURE_APPLY_BEGIN_DT").text)
+                applyEndLi.append(tag.find("LECTURE_APPLY_END_DT").text)
+                lecWeekdayLi.append(tag.find("LECTURE_DAY_OF_WEEK").text)
+                lecDayStLi.append(tag.find("LECTURE_BEGIN_YMD").text)
+                lecDayEndLi.append(tag.find("LECTURE_END_YMD").text)
+                applyCntLi.append(tag.find("APPLY_USER_NUM").text + " / " + tag.find("APPLY_LIMIT_NUM").text)
+                lecPlaceLi.append(tag.find("LECTURE_PLACE").text)
+            df = pd.DataFrame({'도서관이름':libNameLi,'강좌제목':titleLi,'교육대상':lecForLi,'강좌링크':linkLi,'강좌시간':lecTimeLi,'접수시작일':applyStLi,'접수종료일':applyEndLi,
+                               '강좌요일':lecWeekdayLi,'강좌시작일':lecDayStLi,'강좌종료일':lecDayEndLi,'신청자수':applyCntLi,'교육장소':lecPlaceLi})
+
+            return df
+    except Exception as e:
+        print(f"Error crawling {url}: {e}")
             
 
 if choice == "오늘의 도서관강좌":
-    # 우선 첫페이지를 읽어서 거기의 id를 찾아서 db에 검색한다, db에 있으면 db에서 출력하고 없으면 data를 정리하여 db에 입력한다.
-    def crawl_web(url):
-        global setDay
-        try:
-            # Send an HTTP GET request to the URL
-            response = requests.get(url)
-            
-            # Check if the request was successful
-            if response.status_code == 200:
-                # Parse the HTML content of the page
-                soup = BeautifulSoup(response.text, 'html.parser')
-                titleData = soup.find_all('p', attrs = {'class':'title'})
-                contentData = soup.find_all('div', attrs = {'class':'info on'})
-                # 모든 id 데이터를 찾아서 db에 넘겨서 있는지 검색
-                idList = [item.find('a').attrs['href'].split('=')[-1] for item in titleData]
-                fetchList = fetch_data(idList)
-                #st.write(fetchList)
-                for index, each in enumerate(titleData):
-                    # 강좌 시작일
-                    lecStDay = contentData[index].find_all('span')[1].get_text()[7:].split(' ~ ')[0]
-                    # 강좌 종료일
-                    lecEndDay = contentData[index].find_all('span')[1].get_text()[7:].split(' ~ ')[1]
-                    # 강좌 시작일과 종료일을 datetime형식으로 변환
-                    start = datetime(int(lecStDay.split('-')[0]),int(lecStDay.split('-')[1]),int(lecStDay.split('-')[2]))
-                    end = datetime(int(lecEndDay.split('-')[0]),int(lecEndDay.split('-')[1]),int(lecEndDay.split('-')[2]))
-                    # 오늘과 시작일을 비교(today함수는 시간까지 나오기 때문에 날짜만 나오는 시작 끝 시간과 계산을 통해 값을 추정해야함)
-                    timedifSt = start - setDay
-                    timedifEnd = end - setDay
-                    # 오늘이 포함된 달(즉 이달)이면 모두 저장(지난 날이라도 이달이라면 보고 싶을때가 있어서)
-                    thisMonth = datetime(datetime.today().year,datetime.today().month,1)
-                    thisMonthFlag = False
-                    if start.year >=  thisMonth.year and start.month >= thisMonth.month:
-                        thisMonthFlag = True
-                    else:
-                        thisMonthFlag = False
-                    idNum = each.find('a').attrs['href'].split('=')[-1]
-                    # 시작일이 오늘이상이거나 종료일이 오늘 또는 미래인 것만 검색
-                    if  (timedifSt.days >=0 or timedifEnd.days >=0 or thisMonthFlag) and (idNum in fetchList) :
-                        # 제목에 불필요한 번호가 .과 함께 있어서 제거
-                        titlePos = each.get_text().splitlines()[1].find('.')
-                        title = each.get_text().splitlines()[1][titlePos+1:].strip()
-                        preText = [idNum, title, each.get_text().splitlines()[2], each.find('a').attrs['href'], contentData[index].find_all('span')[1].get_text().split(':')[1].strip(), contentData[index].find_all('span')[3].get_text().split(':')[1].strip()]
-                        # 여기서 보낸건 모두 db에 저장
-                        if "크레마" not in title:
-                            crawl_yeyak(each.find('a').attrs['href'], preText)
-        
-        except Exception as e:
-            st.write(f"Error crawling {url}: {e}")
-
-    # 예약사이트 크롤링(여기에 들어온 건 모두 db에 저장)
-    def crawl_yeyak(url, dataList):
-        try:
-            # Send an HTTP GET request to the URL
-            response = requests.get(url)
-            
-            # Check if the request was successful
-            if response.status_code == 200:
-                # Parse the HTML content of the page
-                soup = BeautifulSoup(response.text, 'html.parser')
-                titleData = soup.find_all('ul', attrs = {'class':'detail-info-list'})
-                findFlag = False
-                # db에 저장하기위해서 저장항목을 리스트로 만듬
-                for each in titleData:
-                    smtitle = each.find_all('dt')
-                    smcontent = each.find_all('dd')
-                    for index1, each1 in enumerate(smtitle):
-                        if each1.get_text().strip() == "요일/시간":
-                            # 강좌일자
-                            lecTime = smcontent[index1].get_text().strip().replace("\t","").replace("  ","").replace("\n","")
-                            dataList.append(lecTime)
-                        if each1.get_text().strip() == "장소":
-                            lecPlace = smcontent[index1].get_text().strip().replace("\t","").replace("  ","").replace("\n","")
-                            dataList.append(lecPlace)
-                            # db에 데이터 넣기
-                            insert_data(dataList)
-                            
-        except Exception as e:
-            st.write(f"Error crawling {url}: {e}")
-
-
-    # db에 id가 있는지 확인(있으면 출력, 없는 건 리스트로 돌려줌)
-    def fetch_data(idList):
-        conn = sq.connect("libLec.db")
-        c = conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS lec (id integer primary key, title text, lecFor text, link text, lecDay text, applyCnt text, lecTime text, lecPlace text)")
-        rtList = []
-        for data in idList:
-            # 입력받은 리스트의 id가 있는지 확인하고 없으면 돌려주고 있으면 표시한다.
-            c.execute("SELECT EXISTS(SELECT 1 FROM lec WHERE id = ?)", (data,))
-            result = c.fetchone()[0]
-            if result == 0:
-                rtList.append(data)
-            else:
-                c.execute("SELECT * FROM lec WHERE id = ?", (data,))
-                results = c.fetchall()
-                if results:
-                    for row in results:
-                        dayMatchCheck(row)
-        conn.close()
-        return rtList
-
-
-    # db에 data입력
-    def insert_data(dataList):
-        conn = sq.connect("libLec.db")
-        c = conn.cursor()
-        c.execute("INSERT INTO lec (id,title,lecFor,link,lecDay,applyCnt,lecTime,lecPlace) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (dataList[0], dataList[1], dataList[2], dataList[3], dataList[4], dataList[5], dataList[6], dataList[7]))
-        conn.commit()
-        conn.close()    
-        dayMatchCheck(dataList)
-
-    # 화면에 표시하는 함수
-    def display(dataList):
-        global totalCnt
-        totalCnt = totalCnt + 1
-##        st.write("제목: " + dataList[1])
-##        st.write("대상: " + dataList[2])
-##        st.write("링크: " + dataList[3])
-##        st.write("일자: " + dataList[4])
-##        st.write("인원: " + dataList[5])
-##        st.write("시간: " + dataList[6])
-##        st.write("장소: " + dataList[7])
-##        st.markdown("""---""")
-##        st.write("\n")
-        #data = [dataList[3],dataList[2],dataList[1],dataList[4],dataList[5],dataList[6],dataList[7]]
-        # ["제목","대상","링크","일자","인원","시간","장소"]
-        lecIndex = ["강좌제목","교육대상","강좌링크","수강기간","신청자수","요일시간","교육장소"]
-        df = pd.DataFrame(dataList[1:], index=lecIndex)
-        df.columns=["내용"]
-        #df.style.apply(lambda x: "background-color: red")
-        st.markdown(df.to_html(render_links=True),unsafe_allow_html=True)
-        #st.data_editor(df, column_config={"내용": st.column_config.LinkColumn("내용"), "widgets": st.column_config.Column("Streamlit Widgets",width="large")})
-        st.markdown("""---""")
-        #st.write("\n")
-
-
-    # 시작일과 종료일을 받아서 선정한 날짜와 맞는지 확인
-    def dayMatchCheck(dataList):
-        # 강좌 시작일
-        lecStDay = dataList[4].split(' ~ ')[0].strip()
-        # 강좌 종료일
-        lecEndDay = dataList[4].split(' ~ ')[1].strip()
-        # 강좌 시작일과 종료일을 datetime형식으로 변환
-        start = datetime(int(lecStDay.split('-')[0]),int(lecStDay.split('-')[1]),int(lecStDay.split('-')[2]))
-        end = datetime(int(lecEndDay.split('-')[0]),int(lecEndDay.split('-')[1]),int(lecEndDay.split('-')[2]))
-        global setDay
-        timedifSt = start - setDay
-        timedifEnd = end - setDay
-        wkdayList = ["월","화","수","목","금","토","일"]
-        wkDay = wkdayList[datetime.date(setDay).weekday()]
-        if (timedifSt.days == 0) or (timedifSt.days < 0 and timedifEnd.days >= 0) and wkDay == dataList[6][0]:
-            display(dataList)
-
-
-        
-    # Define the starting URL and depth of crawling
-    starting_url = 'https://www.hscitylib.or.kr/jalib/menu/11257/program/30021/lectureList.do?currentPageNo=1&statusCd=&targetCd=&searchCondition=title'
-                    #https://www.hscitylib.or.kr/jalib/menu/11257/program/30021/lectureList.do?targetCd=&statusCd=&searchCondition=title&searchKeyword=
-    #starting_url = 'https://www.hscitylib.or.kr/iutlib/menu/11388/program/30021/lectureList.do?currentPageNo=1&statusCd=&targetCd='
-
-    # Start crawling
-    d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+    col1, col2 = st.columns(2)
+    with col1:
+        lib = st.selectbox('도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
+    with col2:
+        d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
     st.markdown("""---""")
-    # datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
+
+    starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+
+    ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
     setDay = datetime(d.year,d.month,d.day)
-    totalCnt = 0
 
-        
-    crawl_web(starting_url)
-    crawl_web(starting_url.replace("No=1","No=2"))
-    ##crawl_web(starting_url.replace("No=1","No=3"))
-    st.write(str(totalCnt) + "개가 검색 되었습니다.")
+    df = crawl_web(starting_url, lib)
+    
+    # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
+    def clearWeek(x):
+        return x[0]
+    df['강좌요일'] = pd.to_numeric(df['강좌요일'].apply(clearWeek))
+    # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
+    df['강좌시작일'] = pd.to_datetime(df['강좌시작일'])
+    df['강좌종료일'] = pd.to_datetime(df['강좌종료일'])
 
+
+    wkDay = datetime.date(setDay).weekday()+1
+    # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
+    # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
+    finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (wkDay == df['강좌요일']))]
+    # 크레마 제외
+    finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
+    # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
+    if lib == '작은도서관':
+        lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+    finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+    st.success(lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + str(setDay)[:10] + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+    lecIndex = ["교육대상","강좌링크","수강기간","신청자수","접수기간","강좌시간","교육장소"]
+    for ind in finalDf.index:
+        displayDataList = [finalDf["교육대상"][ind],finalDf["강좌링크"][ind],finalDf["강좌시작일"][ind].strftime('%Y-%m-%d') + " ~ " + finalDf["강좌종료일"][ind].strftime('%Y-%m-%d'),
+                           finalDf["신청자수"][ind],finalDf["접수시작일"][ind] + " ~ " + finalDf["접수종료일"][ind],finalDf["강좌시간"][ind],finalDf["교육장소"][ind]]
+        df1 = pd.DataFrame(displayDataList, index=lecIndex)
+        df1.columns=[finalDf["강좌제목"][ind]]
+        st.markdown(df1.to_html(render_links=True),unsafe_allow_html=True)
+        st.markdown("""---""")
+    
+
+
+if choice == "접수 중인 도서관강좌":
+    col1, col2 = st.columns(2)
+    with col1:
+        lib = st.selectbox('도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
+    with col2:
+        d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+    st.markdown("""---""")
+
+    starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+
+    ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
+    setDay = datetime(d.year,d.month,d.day)
+
+    df = crawl_web(starting_url, lib)
+    # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
+    def clearDay(x):
+        return x[:10]
+    df['접수시작일'] = pd.to_datetime(df['접수시작일'].apply(clearDay))
+    df['접수종료일'] = pd.to_datetime(df['접수종료일'].apply(clearDay))
+
+    wkDay = datetime.date(setDay).weekday()+1
+    # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
+    # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
+    finalDf = df[(df['접수시작일'] == setDay) | ((df['접수시작일'] < setDay) & (df['접수종료일'] >= setDay))]
+    # 크레마 제외
+    finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
+    # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
+    if lib == '작은도서관':
+        lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+    finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+    st.success(lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관( " + str(setDay)[:10] + ") 접수 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+    lecIndex = ["교육대상","강좌링크","수강기간","신청자수","접수기간","강좌시간","교육장소"]
+    for ind in finalDf.index:
+        displayDataList = [finalDf["교육대상"][ind],finalDf["강좌링크"][ind],finalDf["강좌시작일"][ind] + " ~ " + finalDf["강좌종료일"][ind],
+                           finalDf["신청자수"][ind],finalDf["접수시작일"][ind].strftime('%Y-%m-%d') + " ~ " + finalDf["접수종료일"][ind].strftime('%Y-%m-%d'),finalDf["강좌시간"][ind],finalDf["교육장소"][ind]]
+        df1 = pd.DataFrame(displayDataList, index=lecIndex)
+        df1.columns=[finalDf["강좌제목"][ind]]
+        st.markdown(df1.to_html(render_links=True),unsafe_allow_html=True)
+        st.markdown("""---""")
+    
