@@ -234,7 +234,7 @@ if choice == "오늘의 도서관강좌":
 |`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
 |`강좌시간`|{finalDf["강좌시간"][ind]}|
 |`교육장소`|{finalDf["교육장소"][ind]}|
----
+#
 """)
             
 
@@ -263,6 +263,7 @@ if choice == "오늘의 도서관강좌":
             lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
         finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
         st.success("📝 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관( " + disDay + ") 접수 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+        #markdown 언어 사용 표 만들기 표사이에 공백을 주기위해 header(#   )를 추가
         for ind in finalDf.index:
             st.markdown(f"""|`강좌제목`|[{finalDf["강좌제목"][ind]}]({finalDf["강좌링크"][ind]})|
 |------------|-----------------|
@@ -271,7 +272,7 @@ if choice == "오늘의 도서관강좌":
 |`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
 |`강좌시간`|{finalDf["강좌시간"][ind]}|
 |`교육장소`|{finalDf["교육장소"][ind]}|
----
+#
 """)
 
     with tab3:
@@ -296,6 +297,6 @@ if choice == "오늘의 도서관강좌":
 |`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
 |`강좌시간`|{finalDf["강좌시간"][ind]}|
 |`교육장소`|{finalDf["교육장소"][ind]}|
----
+#
 """)
         
