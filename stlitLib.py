@@ -12,12 +12,12 @@ from jamo import h2j, j2hcj #한글을 자모로 분리하는 라이브러리
 import qrcode
 import xml.etree.ElementTree as ET
 
-    
+
 # https://icons.getbootstrap.com/
 
-st.set_page_config(page_title ='도서관 도구', page_icon = "⚙")
+st.set_page_config(page_title ='도서관 도구', page_icon = "📚") #🛠📚🏛
 with st.sidebar:
-    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌", '접수 중인 도서관강좌'],
+    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌", '준비중'],
                          icons=['qr-code', 'brush', 'info-circle'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
@@ -177,103 +177,125 @@ def crawl_web(url, lib):
                 lecDayEndLi.append(tag.find("LECTURE_END_YMD").text)
                 applyCntLi.append(tag.find("APPLY_USER_NUM").text + " / " + tag.find("APPLY_LIMIT_NUM").text)
                 lecPlaceLi.append(tag.find("LECTURE_PLACE").text)
-            df = pd.DataFrame({'도서관이름':libNameLi,'강좌제목':titleLi,'교육대상':lecForLi,'강좌링크':linkLi,'강좌시간':lecTimeLi,'접수시작일':applyStLi,'접수종료일':applyEndLi,
+            df = pd.DataFrame({'도서관이름':libNameLi,'강좌제목':titleLi,'교육대상':lecForLi,'강좌링크':linkLi,'강좌시간':lecTimeLi,'접수시작일시간':applyStLi,'접수종료일시간':applyEndLi,
                                '강좌요일':lecWeekdayLi,'강좌시작일':lecDayStLi,'강좌종료일':lecDayEndLi,'신청자수':applyCntLi,'교육장소':lecPlaceLi})
 
             return df
     except Exception as e:
         print(f"Error crawling {url}: {e}")
-            
 
 if choice == "오늘의 도서관강좌":
     cremaX = False
     col1, col2 = st.columns(2)
     with col1:
-        lib = st.selectbox('도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
-        if lib == '진안':
-            cremaX = st.checkbox("크레마제외",True)
+        lib = st.selectbox(':classical_building: 도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
     with col2:
-        d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+        d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+        ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
+        setDay = datetime(d.year,d.month,d.day)
+        # tab과 검색결과에 Display할 날짜, 오늘은 오늘로 표시하고 나머지 일은 날짜를 적는다.
+        if setDay == datetime(datetime.today().year,datetime.today().month,1):
+            disDay = "오늘"
+        else:
+            disDay = str(setDay)[:10] + "일"
     st.markdown("""---""")
-
-    starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
-
-    ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
-    setDay = datetime(d.year,d.month,d.day)
-
-    df = crawl_web(starting_url, lib)
-    
-    # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
-    # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
-    df['강좌시작일'] = pd.to_datetime(df['강좌시작일'])
-    df['강좌종료일'] = pd.to_datetime(df['강좌종료일'])
-
-    # datetime의 요일 값과 사이트의 요일 값이 달라서 맞춤
-    wkDay = datetime.date(setDay).weekday()+1
-    # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
-    # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
-    # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
-    finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
-    # 크레마 제외
-    if cremaX:
-        finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
-    # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
-    if lib == '작은도서관':
-        lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
-    finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
-    st.success(lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + str(setDay)[:10] + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
-    lecIndex = ["교육대상","강좌링크","수강기간","신청자수","접수기간","강좌시간","교육장소"]
-    for ind in finalDf.index:
-        displayDataList = [finalDf["교육대상"][ind],finalDf["강좌링크"][ind],finalDf["강좌시작일"][ind].strftime('%Y-%m-%d') + " ~ " + finalDf["강좌종료일"][ind].strftime('%Y-%m-%d'),
-                           finalDf["신청자수"][ind],finalDf["접수시작일"][ind] + " ~ " + finalDf["접수종료일"][ind],finalDf["강좌시간"][ind],finalDf["교육장소"][ind]]
-        df1 = pd.DataFrame(displayDataList, index=lecIndex)
-        df1.columns=[finalDf["강좌제목"][ind]]
-        st.markdown(df1.to_html(render_links=True),unsafe_allow_html=True)
-        st.markdown("""---""")
-    
-
-
-if choice == "접수 중인 도서관강좌":
-    cremaX = False
-    col1, col2 = st.columns(2)
-    with col1:
-        lib = st.selectbox('도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
+    tab1, tab2, tab3 = st.tabs(["🎨 " + disDay + ' 도서관강좌', "📝 " + disDay + ' 접수 중인 도서관강좌 ', '🔎 도서관강좌 검색'])
+    with tab1:
         if lib == '진안':
-            cremaX = st.checkbox("크레마제외",True)
-    with col2:
-        d = st.date_input("날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
-    st.markdown("""---""")
+            cremaX = st.checkbox("크레마제외",True,"crema1")
+        starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
 
-    starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+        df = crawl_web(starting_url, lib)
+        
+        # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
+        # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
+        df['강좌시작일'] = pd.to_datetime(df['강좌시작일'])
+        df['강좌종료일'] = pd.to_datetime(df['강좌종료일'])
 
-    ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
-    setDay = datetime(d.year,d.month,d.day)
+        # datetime의 요일 값과 사이트의 요일 값이 달라서 맞춤
+        wkDay = datetime.date(setDay).weekday()+1
+        # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
+        # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
+        # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
+        finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
+        # 크레마 제외
+        if cremaX:
+            finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
+        # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
+        if lib == '작은도서관':
+            lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+        finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+        st.success("🎨 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + disDay + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+        for ind in finalDf.index:
+            st.markdown(f"""|`강좌제목`|[{finalDf["강좌제목"][ind]}]({finalDf["강좌링크"][ind]})|
+|------------|-----------------|
+|`강좌대상`|{finalDf["교육대상"][ind]} (신청자수: {finalDf["신청자수"][ind]})|
+|`수강기간`|{finalDf["강좌시작일"][ind].strftime('%Y-%m-%d') + " ~ " + finalDf["강좌종료일"][ind].strftime('%Y-%m-%d')}|
+|`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
+|`강좌시간`|{finalDf["강좌시간"][ind]}|
+|`교육장소`|{finalDf["교육장소"][ind]}|
+---
+""")
+            
 
-    df = crawl_web(starting_url, lib)
-    # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
-    def clearDay(x):
-        return x[:10]
-    df['접수시작일'] = pd.to_datetime(df['접수시작일'].apply(clearDay))
-    df['접수종료일'] = pd.to_datetime(df['접수종료일'].apply(clearDay))
+    with tab2:
+        cremaX = False
+        if lib == '진안':
+            cremaX = st.checkbox("크레마제외",True,"crema2")
 
-    wkDay = datetime.date(setDay).weekday()+1
-    # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
-    # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
-    finalDf = df[(df['접수시작일'] == setDay) | ((df['접수시작일'] < setDay) & (df['접수종료일'] >= setDay))]
-    # 크레마 제외
-    if cremaX:
-        finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
-    # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
-    if lib == '작은도서관':
-        lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
-    finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
-    st.success(lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관( " + str(setDay)[:10] + ") 접수 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
-    lecIndex = ["교육대상","강좌링크","수강기간","신청자수","접수기간","강좌시간","교육장소"]
-    for ind in finalDf.index:
-        displayDataList = [finalDf["교육대상"][ind],finalDf["강좌링크"][ind],finalDf["강좌시작일"][ind] + " ~ " + finalDf["강좌종료일"][ind],
-                           finalDf["신청자수"][ind],finalDf["접수시작일"][ind].strftime('%Y-%m-%d') + " ~ " + finalDf["접수종료일"][ind].strftime('%Y-%m-%d'),finalDf["강좌시간"][ind],finalDf["교육장소"][ind]]
-        df1 = pd.DataFrame(displayDataList, index=lecIndex)
-        df1.columns=[finalDf["강좌제목"][ind]]
-        st.markdown(df1.to_html(render_links=True),unsafe_allow_html=True)
-        st.markdown("""---""")
-    
+        starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+
+        df = crawl_web(starting_url, lib)
+        # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
+        def clearDay(x):
+            return x[:10]
+        df['접수시작일'] = pd.to_datetime(df['접수시작일시간'].apply(clearDay))
+        df['접수종료일'] = pd.to_datetime(df['접수종료일시간'].apply(clearDay))
+
+        # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
+        # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
+        finalDf = df[(df['접수시작일'] == setDay) | ((df['접수시작일'] < setDay) & (df['접수종료일'] >= setDay))]
+        # 크레마 제외
+        if cremaX:
+            finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
+        # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
+        if lib == '작은도서관':
+            lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+        finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+        st.success("📝 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관( " + disDay + ") 접수 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+        for ind in finalDf.index:
+            st.markdown(f"""|`강좌제목`|[{finalDf["강좌제목"][ind]}]({finalDf["강좌링크"][ind]})|
+|------------|-----------------|
+|`강좌대상`|{finalDf["교육대상"][ind]} (신청자수: {finalDf["신청자수"][ind]})|
+|`수강기간`|{finalDf["강좌시작일"][ind] + " ~ " + finalDf["강좌종료일"][ind]}|
+|`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
+|`강좌시간`|{finalDf["강좌시간"][ind]}|
+|`교육장소`|{finalDf["교육장소"][ind]}|
+---
+""")
+
+    with tab3:
+        textIn = st.text_input("검색어를 입력하세요")
+        starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+
+        df = crawl_web(starting_url, lib)
+
+        # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
+        if lib == '작은도서관':
+            lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+        if textIn:
+            finalDf = df[df['강좌제목'].str.contains(textIn)]
+            finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+            st.success("🔎 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
+
+            for ind in finalDf.index:
+                st.markdown(f"""|`강좌제목`|[{finalDf["강좌제목"][ind]}]({finalDf["강좌링크"][ind]})|
+|------------|-----------------|
+|`강좌대상`|{finalDf["교육대상"][ind]} (신청자수: {finalDf["신청자수"][ind]})|
+|`수강기간`|{finalDf["강좌시작일"][ind] + " ~ " + finalDf["강좌종료일"][ind]}|
+|`접수기간`|{finalDf["접수시작일시간"][ind] + " ~ " + finalDf["접수종료일시간"][ind]}|
+|`강좌시간`|{finalDf["강좌시간"][ind]}|
+|`교육장소`|{finalDf["교육장소"][ind]}|
+---
+""")
+        
