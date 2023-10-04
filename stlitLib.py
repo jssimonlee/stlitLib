@@ -46,17 +46,17 @@ if choice == "QR코드 만들기":
 
     #st.header("QR코드 생성")
     option = st.selectbox(
-        ':joystick:어떤 QR코드를 만드시겠어요?',
+        ':joystick: 어떤 QR코드를 만드시겠어요?',
         ('코라스 ID와 비번', '인터넷주소', '와이파이 자동접속'))
 
-    if option == ':standing_person: :key: 코라스 ID와 비번':
+    if option == '코라스 ID와 비번':
         #st.subheader("코라스 로그인 아이디 비번입력")
         col1, col2 = st.columns(2)
         with col1:
-            kollasId = st.text_input(':standing_person: 아이디를 입력하세요')
+            kollasId = st.text_input('👭 아이디를 입력하세요')
         with col2:
-            kollasPw = st.text_input(':key: 비번을 입력하세요')
-        qrWidth = st.slider(":level_slider:qr코드 크기를 조절하세요",20,400,110)
+            kollasPw = st.text_input('🔑 비번을 입력하세요')
+        qrWidth = st.slider(":level_slider: QR코드 크기를 조절하세요",20,400,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and kollasId and kollasPw:
             kollasId = kortoEng(kollasId)
@@ -98,8 +98,8 @@ if choice == "QR코드 만들기":
 
 
     elif option == '인터넷주소':
-        intLink = st.text_input('인터넷주소를 입력하세요')
-        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+        intLink = st.text_input(':earth_asia: 인터넷주소를 입력하세요')
+        qrWidth = st.slider(":level_slider: QR코드 크기를 조절하세요",20,700,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and intLink:
             img = qrcode.make(intLink)
@@ -117,10 +117,10 @@ if choice == "QR코드 만들기":
     elif option == '와이파이 자동접속':
         col1, col2 = st.columns(2)
         with col1:
-            wifiId = st.text_input('아이디(SSID)를 입력하세요')
+            wifiId = st.text_input(':satellite_antenna: 아이디(SSID)를 입력하세요')
         with col2:
-            wifiPw = st.text_input('비밀번호을 입력하세요')
-        qrWidth = st.slider("qr코드 크기를 조절하세요",20,700,110)
+            wifiPw = st.text_input('🔑 비밀번호을 입력하세요')
+        qrWidth = st.slider(":level_slider: QR코드 크기를 조절하세요",20,700,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and wifiId and wifiPw:
             kollasId = kortoEng(wifiId)
