@@ -46,17 +46,17 @@ if choice == "QR코드 만들기":
 
     #st.header("QR코드 생성")
     option = st.selectbox(
-        '어떤 QR코드를 만드시겠어요?',
+        ':joystick:어떤 QR코드를 만드시겠어요?',
         ('코라스 ID와 비번', '인터넷주소', '와이파이 자동접속'))
 
-    if option == '코라스 ID와 비번':
+    if option == ':standing_person::key:코라스 ID와 비번':
         #st.subheader("코라스 로그인 아이디 비번입력")
         col1, col2 = st.columns(2)
         with col1:
-            kollasId = st.text_input('아이디를 입력하세요')
+            kollasId = st.text_input(':standing_person:아이디를 입력하세요')
         with col2:
-            kollasPw = st.text_input('비번을 입력하세요')
-        qrWidth = st.slider("qr코드 크기를 조절하세요",20,400,110)
+            kollasPw = st.text_input(':key:비번을 입력하세요')
+        qrWidth = st.slider(":level_slider:qr코드 크기를 조절하세요",20,400,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and kollasId and kollasPw:
             kollasId = kortoEng(kollasId)
@@ -194,7 +194,7 @@ if choice == "오늘의 도서관강좌":
         ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
         setDay = datetime(d.year,d.month,d.day)
         # tab과 검색결과에 Display할 날짜, 오늘은 오늘로 표시하고 나머지 일은 날짜를 적는다.
-        if setDay == datetime(datetime.today().year,datetime.today().month,1):
+        if setDay == datetime(datetime.today().year,datetime.today().month,datetime.today().day):
             disDay = "오늘"
         else:
             disDay = str(setDay)[:10] + "일"
