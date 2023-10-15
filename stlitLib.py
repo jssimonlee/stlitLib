@@ -55,7 +55,7 @@ if choice == "QR코드 만들기":
         with col1:
             kollasId = st.text_input('👭 아이디를 입력하세요')
         with col2:
-            kollasPw = st.text_input('🔑 비번을 입력하세요')
+            kollasPw = st.text_input('🔑 비번을 입력하세요', type="password")
         qrWidth = st.slider(":level_slider: QR코드 크기를 조절하세요",20,400,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and kollasId and kollasPw:
@@ -119,7 +119,7 @@ if choice == "QR코드 만들기":
         with col1:
             wifiId = st.text_input(':satellite_antenna: 아이디(SSID)를 입력하세요')
         with col2:
-            wifiPw = st.text_input('🔑 비밀번호을 입력하세요')
+            wifiPw = st.text_input('🔑 비밀번호을 입력하세요', type="password")
         qrWidth = st.slider(":level_slider: QR코드 크기를 조절하세요",20,700,110)
         btn_clicked = st.button("만들기")
         if btn_clicked and wifiId and wifiPw:
