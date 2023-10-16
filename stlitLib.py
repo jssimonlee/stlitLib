@@ -17,8 +17,8 @@ import xml.etree.ElementTree as ET
 
 st.set_page_config(page_title ='도서관 도구', page_icon = "📚") #🛠📚🏛
 with st.sidebar:
-    choice = option_menu(None, ["QR코드 만들기", "오늘의 도서관강좌", '준비중'],
-                         icons=['qr-code', 'brush', 'info-circle'],
+    choice = option_menu(None, ["오늘의 도서관강좌", "QR코드 만들기", '준비중'],
+                         icons=['brush', 'qr-code', 'info-circle'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
