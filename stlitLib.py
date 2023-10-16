@@ -51,8 +51,8 @@ if choice == "QR코드 만들기":
 
     if option == '코라스 ID와 비번':
         #st.subheader("코라스 로그인 아이디 비번입력")
-        st.info(st.markdown(f"""* 코라스 로그인시 바코드 리더기로 QR코드를 읽어서 한번에 로그인 하는 QR코드
-* 시간경과시 로그인 비번만으로 로그인 하는 QR코드 총 2가지 동시 생성"""))
+        st.info(f"""* 코라스 로그인시 바코드 리더기로 QR코드를 읽어서 한번에 로그인 하는 QR코드
+* 시간경과시 로그인 비번만으로 로그인 하는 QR코드 총 2가지 동시 생성""")
         col1, col2 = st.columns(2)
         with col1:
             kollasId = st.text_input('👭 아이디를 입력하세요')
