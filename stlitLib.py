@@ -17,8 +17,8 @@ import xml.etree.ElementTree as ET
 
 st.set_page_config(page_title ='도서관 도구', page_icon = "📚") #🛠📚🏛
 with st.sidebar:
-    choice = option_menu(None, ["오늘의 도서관강좌", "QR코드 만들기", '준비중'],
-                         icons=['brush', 'qr-code', 'info-circle'],
+    choice = option_menu(None, ["오늘의 도서관강좌", "QR코드 만들기"],
+                         icons=['brush', 'qr-code'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
@@ -52,6 +52,7 @@ if choice == "QR코드 만들기":
     if option == '코라스 ID와 비번':
         #st.subheader("코라스 로그인 아이디 비번입력")
         col1, col2 = st.columns(2)
+        st.title("코라스 로그인시 바코드 리더기로 QR코드를 읽어서 한번에 로그인 하는 QR코드\n 시간경과시 로그인 비번만으로 로그인 하는 QR코드 총 2가지 동시 생성")
         with col1:
             kollasId = st.text_input('👭 아이디를 입력하세요')
         with col2:
