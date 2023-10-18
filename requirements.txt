@@ -5,4 +5,4 @@ bs4
 pandas
 jamo
 qrcode
-
+extra_streamlit_components
