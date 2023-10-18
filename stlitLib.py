@@ -241,8 +241,8 @@ if choice == "오늘의 도서관강좌":
 
     with tab2:
         cremaX = False
-        if lib == '진안':
-            cremaX = st.checkbox("크레마제외",True,"crema2")
+        # if lib == '진안':
+        #     cremaX = st.checkbox("크레마제외",True,"crema2")
 
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
 
@@ -257,6 +257,8 @@ if choice == "오늘의 도서관강좌":
         # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
         finalDf = df[(df['접수시작일'] == setDay) | ((df['접수시작일'] < setDay) & (df['접수종료일'] >= setDay))]
         # 크레마 제외
+        if lib == '진안' and finalDf['강좌제목'].str.count('크레마').sum() >= 1:
+            cremaX = st.checkbox("크레마제외",True,"crema2")
         if cremaX:
             finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
         # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
