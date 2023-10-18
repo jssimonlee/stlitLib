@@ -11,11 +11,27 @@ from PIL import Image
 from jamo import h2j, j2hcj #한글을 자모로 분리하는 라이브러리
 import qrcode
 import xml.etree.ElementTree as ET
+import extra_streamlit_components as stx
 
 
 # https://icons.getbootstrap.com/
 
-st.set_page_config(page_title ='도서관 도구', page_icon = "📚") #🛠📚🏛
+st.set_page_config(page_title ='도서관 도구', page_icon = "📚")
+libList = ['진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관']
+
+# 쿠키 읽어오기
+@st.cache_resource(experimental_allow_widgets=True)
+def get_manager():
+    return stx.CookieManager()
+cookie_manager = get_manager()
+cookies = cookie_manager.get_all()
+myLib = libList[0]
+default_ix1 = 0
+value = cookie_manager.get('myLib')
+if value:
+    default_ix1 = libList.index(value)
+    myLib = libList[default_ix1]
+
 with st.sidebar:
     choice = option_menu(None, ["오늘의 도서관강좌", "QR코드 만들기"],
                          icons=['brush', 'qr-code'],
@@ -27,6 +43,18 @@ with st.sidebar:
         "nav-link-selected": {"background-color": "#08c7b4"},
     }
     )
+    st.markdown("""
+---
+""")
+
+    with st.form(key="Cookie"):
+        # 쿠키에 저장된 도서관 이름이 있다면 그것을 기본값으로 하고 아니면 첫번째 값으로 들어간다.
+        myLib = st.selectbox(':classical_building: 나의 소속도서관 선택',libList,default_ix1)
+        submitted = st.form_submit_button("소속도서관 저장")
+        if submitted:
+            cookie_manager.set('myLib', myLib)
+            st.success('소속도서관 저장 성공')
+    
 
 if choice == "QR코드 만들기":
     # 한글입력받은 것을 자모 분리하여 영어해당자판으로 바꾸어서 리턴(코라스의 아이디는 한글에 해당하는 영어로 입력되어야함)
@@ -190,7 +218,9 @@ if choice == "오늘의 도서관강좌":
     cremaX = False
     col1, col2 = st.columns(2)
     with col1:
-        lib = st.selectbox(':classical_building: 도서관을 선택하세요.',('진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관'))
+
+        default_ix = libList.index(myLib)
+        lib = st.selectbox(':classical_building: 검색 할 도서관을 선택하세요',libList,default_ix)
     with col2:
         d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
         ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
