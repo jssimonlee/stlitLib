@@ -206,7 +206,7 @@ if choice == "오늘의 도서관강좌":
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
         df = crawl_web(starting_url, lib)
         
-        if lib == '진안' and df['강좌제목'].str.contains('크레마'):
+        if lib == '진안' and df['강좌제목'].str.count('크레마').sum():
             cremaX = st.checkbox("크레마제외",True,"crema1")
 
         # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
