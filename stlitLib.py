@@ -218,7 +218,7 @@ if choice == "오늘의 도서관강좌":
         # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
         finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
         # 크레마 제외
-        if lib == '진안' and df['강좌제목'].str.count('크레마').sum() >= 1:
+        if lib == '진안' and finalDf['강좌제목'].str.count('크레마').sum() >= 1:
             cremaX = st.checkbox("크레마제외",True,"crema1")
         if cremaX:
             finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
