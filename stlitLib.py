@@ -205,9 +205,6 @@ if choice == "오늘의 도서관강좌":
     with tab1:
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
         df = crawl_web(starting_url, lib)
-        
-        if lib == '진안' and df['강좌제목'].str.count('크레마').sum() >= 1:
-            cremaX = st.checkbox("크레마제외",True,"crema1")
 
         # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
         # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
@@ -221,6 +218,8 @@ if choice == "오늘의 도서관강좌":
         # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
         finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
         # 크레마 제외
+        if lib == '진안' and df['강좌제목'].str.count('크레마').sum() >= 1:
+            cremaX = st.checkbox("크레마제외",True,"crema1")
         if cremaX:
             finalDf = finalDf[~finalDf['강좌제목'].str.contains('크레마')]
         # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
