@@ -175,6 +175,7 @@ if choice == "QR코드 만들기":
 def crawl_web(url, lib):
     try:
         print("crawl_web접근", lib, datetime.today())
+        st.write("crawl_web접근", lib, datetime.today())
         # Send an HTTP GET request to the URL
         response = requests.get(url)
         
