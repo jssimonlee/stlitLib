@@ -176,8 +176,8 @@ if choice == "QR코드 만들기":
 @st.cache_data(show_spinner="화성시통합예약시스템 검색중", ttl="10m")
 def crawl_web(url, lib):
     try:
-        print("crawl_web접근", lib, datetime.today(timezone('Asia/Seoul')))
-        st.write("crawl_web접근", lib, datetime.today(timezone('Asia/Seoul')))
+        print("crawl_web접근", lib, datetime.now(timezone('Asia/Seoul')))
+        st.write("crawl_web접근", lib, datetime.now(timezone('Asia/Seoul')))
         # Send an HTTP GET request to the URL
         response = requests.get(url)
         
@@ -225,11 +225,13 @@ if choice == "오늘의 도서관강좌":
         default_ix = libList.index(myLib)
         lib = st.selectbox(':classical_building: 검색 할 도서관을 선택하세요',libList,default_ix)
     with col2:
-        d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+        # d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
+        d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.now(timezone('Asia/Seoul')), datetime(datetime.now(timezone('Asia/Seoul')).year,datetime.now(timezone('Asia/Seoul')).month,1))
         ## datetime.date와 datetime.datetime형식이 안맞아서 날짜를 다시 넣어주어야함
         setDay = datetime(d.year,d.month,d.day)
         # tab과 검색결과에 Display할 날짜, 오늘은 오늘로 표시하고 나머지 일은 날짜를 적는다.
-        if setDay == datetime(datetime.today().year,datetime.today().month,datetime.today().day):
+        # if setDay == datetime(datetime.today().year,datetime.today().month,datetime.today().day):
+        if setDay == datetime(datetime.now(timezone('Asia/Seoul')).year,datetime.now(timezone('Asia/Seoul')).month,datetime.now(timezone('Asia/Seoul')).day):
             disDay = "오늘"
         else:
             disDay = str(setDay)[:10] + "일"
