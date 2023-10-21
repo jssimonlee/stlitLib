@@ -16,7 +16,7 @@ import extra_streamlit_components as stx
 
 # https://icons.getbootstrap.com/
 # 한국시간으로 보정(서버가 미국이라서)
-datetime.now(timezone('Asia/Seoul'))
+# datetime.now(timezone('Asia/Seoul'))
 
 st.set_page_config(page_title ='도서관 도구', page_icon = "📚")
 libList = ['진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관']
