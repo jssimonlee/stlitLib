@@ -176,8 +176,8 @@ if choice == "QR코드 만들기":
 @st.cache_data(show_spinner="화성시통합예약시스템 검색중", ttl="10m")
 def crawl_web(url, lib):
     try:
-        print("crawl_web접근", lib, datetime.today())
-        st.write("crawl_web접근", lib, datetime.today())
+        print("crawl_web접근", lib, datetime.today(timezone('Asia/Seoul')))
+        st.write("crawl_web접근", lib, datetime.today(timezone('Asia/Seoul')))
         # Send an HTTP GET request to the URL
         response = requests.get(url)
         
