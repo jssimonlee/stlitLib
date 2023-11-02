@@ -33,8 +33,8 @@ if value:
     myLib = libList[default_ix1]
 
 with st.sidebar:
-    choice = option_menu(None, ["오늘의 도서관강좌", "QR코드 만들기"],
-                         icons=['brush', 'qr-code'],
+    choice = option_menu(None, ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
+                         icons=['brush','info-circle', 'qr-code'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
@@ -334,4 +334,39 @@ if choice == "오늘의 도서관강좌":
 |`교육장소`|{finalDf["교육장소"][ind]}|
 #
 """)
-        
+
+if choice == "도서관 안내":     
+    st.subheader("화성시립도서관의 여러가지 검색")
+    with open("libDB.txt","r",encoding="utf-8") as f:
+        data = f.readlines()
+
+    
+    dataList = [(d.split("\t")[0],d.split("\t")[1],d.split("\t")[2]) for d in data]
+    st.write("검색가능 키워드")
+    infoData = [d[2].strip() for d in dataList]
+    infoSet = set()
+    for i in infoData:
+        infoSet = set(i.split(",")) | infoSet
+    # infoList = list(infoSet)
+    st.info(sorted(list(infoSet)))
+
+    search = st.text_input('키워드나 키워드의 일부를 입력하세요(여러개 연결 검색시 스페이스로 띄워서 입력가능 예: 진안 전화)')
+    searchList = []
+    if search:
+        if " " in search:
+            searchList = search.split(" ")
+        else:
+            searchList.append(search)
+
+        def myFilter(d):
+            findTag = True
+            for s in searchList:
+                if s.strip().upper() in d[2]:
+                    findTag = findTag*True
+                else:
+                    findTag = findTag*False
+            return findTag
+        disData = ""
+        for da in filter(myFilter,dataList):
+            disData = f"{disData}\n\n{da[0]} : {da[1]}"
+        st.success(disData)
