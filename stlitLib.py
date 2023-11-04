@@ -345,7 +345,7 @@ if choice == "도서관 안내":
     st.write("검색가능 키워드")
     infoData = [d[2].strip() for d in dataList]
     infoSet = []
-    [infoSet.extend(i.split(",")) for i in d]
+    [infoSet.extend(i.split(",")) for i in infoData]
     infoList = set(infoSet)
     st.info(sorted(infoList))
     # 구버전 (for문을 돌리고 or를 하는 거라 속도 차이가 있지 않을까 추정)
