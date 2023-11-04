@@ -346,8 +346,8 @@ if choice == "도서관 안내":
     infoData = [d[2].strip() for d in dataList]
     infoSet = []
     [infoSet.extend(i.split(",")) for i in infoData]
-    infoList = set(infoSet)
-    st.info(sorted(infoList))
+    # infoList = set(infoSet)
+    st.info(sorted(set(infoSet)))
     # 구버전 (for문을 돌리고 or를 하는 거라 속도 차이가 있지 않을까 추정)
     # infoSet = set()
     # for i in infoData:
