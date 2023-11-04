@@ -344,11 +344,15 @@ if choice == "도서관 안내":
     dataList = [(d.split("\t")[0],d.split("\t")[1],d.split("\t")[2]) for d in data]
     st.write("검색가능 키워드")
     infoData = [d[2].strip() for d in dataList]
-    infoSet = set()
-    for i in infoData:
-        infoSet = set(i.split(",")) | infoSet
-    # infoList = list(infoSet)
-    st.info(sorted(list(infoSet)))
+    infoSet = []
+    [infoSet.extend(i.split(",")) for i in d]
+    infoList = set(infoSet)
+    st.info(sorted(infoList))
+    # 구버전 (for문을 돌리고 or를 하는 거라 속도 차이가 있지 않을까 추정)
+    # infoSet = set()
+    # for i in infoData:
+    #     infoSet = set(i.split(",")) | infoSet
+    # st.info(sorted(list(infoSet)))
 
     search = st.text_input('키워드나 키워드의 일부를 입력하세요(여러개 연결 검색시 스페이스로 띄워서 입력가능 예: 진안 전화)')
     searchList = []
