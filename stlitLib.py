@@ -345,8 +345,8 @@ if choice == "도서관 안내":
     st.write("검색가능 키워드")
     infoData = [d[2].strip() for d in dataList]
     infoSet = []
+    # 아래 _를 안하면 리스트가 화면상에 표시된다(안보이게 하려고)
     _ = [infoSet.extend(i.split(",")) for i in infoData]
-    # infoList = set(infoSet)
     st.info(sorted(set(infoSet)))
     # 구버전 (for문을 돌리고 or를 하는 거라 속도 차이가 있지 않을까 추정)
     # infoSet = set()
@@ -354,7 +354,7 @@ if choice == "도서관 안내":
     #     infoSet = set(i.split(",")) | infoSet
     # st.info(sorted(list(infoSet)))
 
-    search = st.text_input('키워드나 키워드의 일부를 입력하세요(여러개 연결 검색시 스페이스로 띄워서 입력가능 예: 진안 전화)')
+    search = st.text_input('키워드나 키워드의 일부를 입력하세요(여러 항목 검색시 이어서 쓰면 됨 예: 진안전화)')
     searchList = []
     if search:
         if " " in search:
@@ -363,8 +363,15 @@ if choice == "도서관 안내":
             searchList.append(search)
 
         def myFilter(d):
+            # findTag = True
+            # for s in searchList:
+            #     if s.strip().upper() in d[2]:
+            #         findTag = findTag*True
+            #     else:
+            #         findTag = findTag*False
+            # if findTag == False:
             findTag = True
-            for s in searchList:
+            for s in search.replace(" ","").replace(",","").replace(".","").replace("?",""):
                 if s.strip().upper() in d[2]:
                     findTag = findTag*True
                 else:
@@ -373,4 +380,6 @@ if choice == "도서관 안내":
         disData = ""
         for da in filter(myFilter,dataList):
             disData = f"{disData}\n\n{da[0]} : {da[1]}"
+        if disData == "":
+            disData = "검색결과가 없습니다."
         st.success(disData)
