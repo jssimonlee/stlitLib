@@ -33,7 +33,8 @@ if value:
     myLib = libList[default_ix1]
 
 with st.sidebar:
-    choice = option_menu(None, ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
+    # choice = option_menu(None, ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
+    choice = option_menu("Main Menu", ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
                          icons=['brush','info-circle', 'qr-code'],
                          menu_icon="app-indicator", default_index=0,
                          styles={
