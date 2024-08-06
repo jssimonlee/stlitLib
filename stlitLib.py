@@ -35,7 +35,7 @@ libList = ['진안','병점','태안','중앙이음터','동탄복합','왕배',
 with st.sidebar:
     choice = option_menu(None, ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
                          icons=['brush','info-circle', 'qr-code'],
-                         menu_icon="app-indicator", default_index=2,
+                         menu_icon="app-indicator", default_index=0,
                          styles={
         "container": {"padding": "4!important", "background-color": "#fafafa"},
         "icon": {"color": "black", "font-size": "25px"},
