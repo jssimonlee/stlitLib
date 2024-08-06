@@ -20,17 +20,17 @@ st.set_page_config(page_title ='도서관 도구', page_icon = "📚")
 libList = ['진안','병점','태안','중앙이음터','동탄복합','왕배','목동','달빛','두빛','봉담','삼괴','송린','송산','남양','정남','둥지','노을빛','다원','서연','작은도서관']
 
 # 쿠키 읽어오기
-@st.cache_resource(experimental_allow_widgets=True)
-def get_manager():
-    return stx.CookieManager()
-cookie_manager = get_manager()
-cookies = cookie_manager.get_all()
-myLib = libList[0]
-default_ix1 = 0
-value = cookie_manager.get('myLib')
-if value:
-    default_ix1 = libList.index(value)
-    myLib = libList[default_ix1]
+# @st.cache_resource(experimental_allow_widgets=True)
+# def get_manager():
+#     return stx.CookieManager()
+# cookie_manager = get_manager()
+# cookies = cookie_manager.get_all()
+# myLib = libList[0]
+# default_ix1 = 0
+# value = cookie_manager.get('myLib')
+# if value:
+#     default_ix1 = libList.index(value)
+#     myLib = libList[default_ix1]
 
 with st.sidebar:
     choice = option_menu(None, ["오늘의 도서관강좌", "도서관 안내","QR코드 만들기"],
@@ -47,13 +47,13 @@ with st.sidebar:
 ---
 """)
 
-    with st.form(key="Cookie"):
-        # 쿠키에 저장된 도서관 이름이 있다면 그것을 기본값으로 하고 아니면 첫번째 값으로 들어간다.
-        myLib = st.selectbox(':classical_building: 나의 소속도서관 선택',libList,default_ix1)
-        submitted = st.form_submit_button("소속도서관 저장")
-        if submitted:
-            cookie_manager.set('myLib', myLib)
-            st.success('소속도서관 저장 성공')
+    # with st.form(key="Cookie"):
+    #     # 쿠키에 저장된 도서관 이름이 있다면 그것을 기본값으로 하고 아니면 첫번째 값으로 들어간다.
+    #     myLib = st.selectbox(':classical_building: 나의 소속도서관 선택',libList,default_ix1)
+    #     submitted = st.form_submit_button("소속도서관 저장")
+    #     if submitted:
+    #         cookie_manager.set('myLib', myLib)
+    #         st.success('소속도서관 저장 성공')
     
 
 if choice == "QR코드 만들기":
