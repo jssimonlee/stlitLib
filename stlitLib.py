@@ -221,6 +221,7 @@ if choice == "오늘의 도서관강좌":
 
         # default_ix = libList.index(myLib)
         # lib = st.selectbox(':classical_building: 검색 할 도서관을 선택하세요',libList,default_ix)
+        lib = st.selectbox(':classical_building: 검색 할 도서관을 선택하세요',libList)
     with col2:
         # d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.today(), datetime(datetime.today().year,datetime.today().month,1))
         d = st.date_input(":spiral_calendar_pad: 날짜를 선택하세요", datetime.now(timezone('Asia/Seoul')), datetime(datetime.now(timezone('Asia/Seoul')).year,datetime.now(timezone('Asia/Seoul')).month,1))
