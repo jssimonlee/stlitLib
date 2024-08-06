@@ -43,9 +43,9 @@ with st.sidebar:
         "nav-link-selected": {"background-color": "#08c7b4"},
     }
     )
-    st.markdown("""
----
-""")
+#     st.markdown("""
+# ---
+# """)
 
     # with st.form(key="Cookie"):
     #     # 쿠키에 저장된 도서관 이름이 있다면 그것을 기본값으로 하고 아니면 첫번째 값으로 들어간다.
