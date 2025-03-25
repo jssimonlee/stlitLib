@@ -260,6 +260,7 @@ if choice == "오늘의 도서관강좌":
         if lib == '작은도서관':
             lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
         df['도서관이름'] = df['도서관이름'].astype(str)
+        df['도서관이름'] = df['도서관이름'].fillna('')
         finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
         st.success("🎨 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + disDay + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
         for ind in finalDf.index:
