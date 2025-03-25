@@ -249,7 +249,10 @@ if choice == "오늘의 도서관강좌":
         # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
         # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
         # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
+        
+        # 노을빛 에라 때문에 추가(chatgpt)
         df['강좌요일'] = df['강좌요일'].astype(str)
+        
         finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
         # 크레마 제외
         if lib == '진안' and finalDf['강좌제목'].str.count('크레마').sum() >= 1:
@@ -259,8 +262,11 @@ if choice == "오늘의 도서관강좌":
         # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
         if lib == '작은도서관':
             lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
+            
+        # 노을빛 에라 때문에 추가(chatgpt)
         df['도서관이름'] = df['도서관이름'].astype(str)
         df['도서관이름'] = df['도서관이름'].fillna('')
+        
         finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
         st.success("🎨 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + disDay + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
         for ind in finalDf.index:
