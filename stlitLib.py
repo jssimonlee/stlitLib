@@ -249,6 +249,7 @@ if choice == "오늘의 도서관강좌":
         # pandas에서는 조건과 조건이 연결될때 반드시 조건 마다 ()를 쳐 주어야한다.
         # 강좌시작일이 선택한 날자이거나 이전이라도 강좌 종료일이 선택한 날보다 미래이면서 요일이 같을때
         # 강좌요일이 1,2,3처럼 요일값이 나열될때가 있어서 str.contains로 검색하여 모두 검색되도록 함
+        df['강좌요일'] = df['강좌요일'].astype(str)
         finalDf = df[(df['강좌시작일'] == setDay) | (((df['강좌시작일'] < setDay) & (df['강좌종료일'] >= setDay)) & (df['강좌요일'].str.contains(str(wkDay))))]
         # 크레마 제외
         if lib == '진안' and finalDf['강좌제목'].str.count('크레마').sum() >= 1:
