@@ -196,8 +196,8 @@ def crawl_web(url, lib):
             lecPlaceLi =[]
             for tag in tree[1]:
                 # 노을빛만 검색이 안되어서 편법으로 추가
-                # if lib == "노을빛" and tag.find("INSTITUTION_NM").text != "노을빛도서관":
-                #     break
+                if lib == "노을빛" and tag.find("INSTITUTION_NM").text != "노을빛도서관":
+                    break
                 libNameLi.append(tag.find("INSTITUTION_NM").text)
                 titleLi.append(tag.find("LECTURE_NM").text)
                 lecForLi.append(tag.find("TARGET_NM").text)
@@ -272,8 +272,9 @@ if choice == "오늘의 도서관강좌":
         # 노을빛 에라 때문에 추가(chatgpt)
         df['도서관이름'] = df['도서관이름'].astype(str)
         df['도서관이름'] = df['도서관이름'].fillna('')
-        
-        finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
+
+        if lib != "노을빛":
+            finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
         st.success("🎨 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관(" + disDay + ") 수업 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
         for ind in finalDf.index:
             st.markdown(f"""|`강좌제목`|[{finalDf["강좌제목"][ind]}]({finalDf["강좌링크"][ind]})|
