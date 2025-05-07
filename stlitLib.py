@@ -196,8 +196,8 @@ def crawl_web(url, lib):
             lecPlaceLi =[]
             for tag in tree[1]:
                 # 노을빛만 검색이 안되어서 편법으로 추가
-                #if (lib == "노을빛") and (tag.find("INSTITUTION_NM").text != "노을빛도서관"):
-                #    break
+                if (lib == "노을빛") and (lib not in tag.find("INSTITUTION_NM").text):
+                    continue
                 libNameLi.append(tag.find("INSTITUTION_NM").text)
                 titleLi.append(tag.find("LECTURE_NM").text)
                 lecForLi.append(tag.find("TARGET_NM").text)
@@ -212,7 +212,6 @@ def crawl_web(url, lib):
                 lecPlaceLi.append(tag.find("LECTURE_PLACE").text)
             df = pd.DataFrame({'도서관이름':libNameLi,'강좌제목':titleLi,'교육대상':lecForLi,'강좌링크':linkLi,'강좌시간':lecTimeLi,'접수시작일시간':applyStLi,'접수종료일시간':applyEndLi,
                                '강좌요일':lecWeekdayLi,'강좌시작일':lecDayStLi,'강좌종료일':lecDayEndLi,'신청자수':applyCntLi,'교육장소':lecPlaceLi})
-            st.write(len(df))
 
             return df
     except Exception as e:
@@ -243,7 +242,7 @@ if choice == "오늘의 도서관강좌":
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
         if lib == "노을빛":
             # 노을빛만 기존 검색조건에서 검색이 안됨 그래서 편법으로 많이 검색해서 걸러냄
-            starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=400&searchCondition=contents&INSTITUTION_IDX=152"
+            starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=1000&searchCondition=contents&INSTITUTION_IDX=152"
         df = crawl_web(starting_url, lib)
 
         # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
@@ -295,7 +294,9 @@ if choice == "오늘의 도서관강좌":
         #     cremaX = st.checkbox("크레마제외",True,"crema2")
 
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
-
+        if lib == "노을빛":
+            # 노을빛만 기존 검색조건에서 검색이 안됨 그래서 편법으로 많이 검색해서 걸러냄
+            starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=1000&searchCondition=contents&INSTITUTION_IDX=152"
         df = crawl_web(starting_url, lib)
         # xml로 넘어온 데이터는 모두 string이라서 형식을 맞추어 줘야한다.
         def clearDay(x):
@@ -314,7 +315,7 @@ if choice == "오늘의 도서관강좌":
         # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
         if lib == '작은도서관':
             lib = '호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉'
-        if lib != "노을빛":
+        if len(finalDf) > 0:
             finalDf = finalDf[finalDf['도서관이름'].str.contains(lib)]
         st.success("📝 " + lib.replace('도서관','').replace('호연|양감|늘봄|기아|마도|샘내|팔탄|커피|비봉','작은') + "도서관( " + disDay + ") 접수 강좌 " + str(len(finalDf)) + "개가 검색 되었습니다.")
         #markdown 언어 사용 표 만들기 표사이에 공백을 주기위해 header(#   )를 추가
@@ -332,7 +333,9 @@ if choice == "오늘의 도서관강좌":
     with tab3:
         textIn = st.text_input("검색어를 입력하세요")
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
-
+        if lib == "노을빛":
+            # 노을빛만 기존 검색조건에서 검색이 안됨 그래서 편법으로 많이 검색해서 걸러냄
+            starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=1000&searchCondition=contents&INSTITUTION_IDX=152"
         df = crawl_web(starting_url, lib)
 
         # 진안도서관을 검색해도 다른 항목이 나올때가 있어서 제거
