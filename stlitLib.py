@@ -195,6 +195,9 @@ def crawl_web(url, lib):
             applyCntLi = []
             lecPlaceLi =[]
             for tag in tree[1]:
+                # 노을빛만 검색이 안되어서 편법으로 추가
+                if lib == "노을빛" and tag.find("INSTITUTION_NM").text != "노을빛도서관":
+                    break:
                 libNameLi.append(tag.find("INSTITUTION_NM").text)
                 titleLi.append(tag.find("LECTURE_NM").text)
                 lecForLi.append(tag.find("TARGET_NM").text)
@@ -237,6 +240,9 @@ if choice == "오늘의 도서관강좌":
     tab1, tab2, tab3 = st.tabs(["🎨 " + disDay + ' 도서관강좌', "📝 " + disDay + ' 접수 중인 도서관강좌 ', '🔎 도서관강좌 검색'])
     with tab1:
         starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=50&searchCondition=contents&searchKeyword={lib}"
+        if lib == "노을빛":
+            # 노을빛만 기존 검색조건에서 검색이 안됨 그래서 편법으로 많이 검색해서 걸러냄
+            starting_url = f"https://yeyak.hscity.go.kr/api/apiLectureList.do?recordCountPerPage=400&searchCondition=contents&INSTITUTION_IDX=152"
         df = crawl_web(starting_url, lib)
 
         # 강좌요일이 int가 아니고 가끔 1,2,3같이 나열되어서 나온다(주의 하루가 아니고 여러일 할때) 이것을 첫자만 남기고 없앤다
