@@ -196,7 +196,7 @@ def crawl_web(url, lib):
             lecPlaceLi =[]
             for tag in tree[1]:
                 # 노을빛만 검색이 안되어서 편법으로 추가
-                if lib == "노을빛" and tag.find("INSTITUTION_NM").text != "노을빛도서관":
+                if (lib == "노을빛") and (tag.find("INSTITUTION_NM").text != "노을빛도서관"):
                     break
                 libNameLi.append(tag.find("INSTITUTION_NM").text)
                 titleLi.append(tag.find("LECTURE_NM").text)
