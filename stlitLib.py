@@ -212,6 +212,7 @@ def crawl_web(url, lib):
                 lecPlaceLi.append(tag.find("LECTURE_PLACE").text)
             df = pd.DataFrame({'도서관이름':libNameLi,'강좌제목':titleLi,'교육대상':lecForLi,'강좌링크':linkLi,'강좌시간':lecTimeLi,'접수시작일시간':applyStLi,'접수종료일시간':applyEndLi,
                                '강좌요일':lecWeekdayLi,'강좌시작일':lecDayStLi,'강좌종료일':lecDayEndLi,'신청자수':applyCntLi,'교육장소':lecPlaceLi})
+            st.write(len(df))
 
             return df
     except Exception as e:
